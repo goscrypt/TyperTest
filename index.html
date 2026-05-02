@@ -3,140 +3,308 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SheetTyper - Dynamic Tabs</title>
+    <title>SheetTyper v2 - Multitopic</title>
     <style>
-        /* (Using the same CSS from the previous version) */
-        :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --text: #f1f5f9; --muted: #94a3b8; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .game-container { background: var(--card); padding: 2rem; border-radius: 1rem; width: 90%; max-width: 700px; text-align: center; }
-        select { background: #0f172a; color: white; padding: 10px; border-radius: 5px; border: 1px solid var(--muted); width: 100%; margin-bottom: 20px; cursor: pointer; }
-        #text-display { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px; font-size: 1.3rem; margin-bottom: 20px; text-align: left; min-height: 80px; }
-        textarea { width: 100%; height: 100px; background: transparent; color: white; border: 2px solid var(--muted); border-radius: 10px; padding: 15px; font-size: 1.1rem; outline: none; }
-        .char-correct { color: #4ade80; }
-        .char-incorrect { color: #f87171; text-decoration: underline; }
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-color: #38bdf8;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --correct: #4ade80;
+            --incorrect: #f87171;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        .settings-panel {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        select, input[type="file"] {
+            background: #0f172a;
+            color: white;
+            border: 1px solid var(--text-muted);
+            padding: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 2rem;
+            background: rgba(0,0,0,0.2);
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--accent-color); }
+        .stat-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); }
+
+        #text-display {
+            font-size: 1.4rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            text-align: left;
+            padding: 1rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 0.5rem;
+            min-height: 120px;
+            word-wrap: break-word;
+        }
+
+        #text-input {
+            width: 100%;
+            background: transparent;
+            border: 2px solid var(--text-muted);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            color: var(--text-main);
+            font-size: 1.2rem;
+            resize: none;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        #text-input:focus { border-color: var(--accent-color); }
+
+        .char-correct { color: var(--correct); }
+        .char-incorrect { color: var(--incorrect); background-color: rgba(248, 113, 113, 0.2); }
+        .char-current { border-bottom: 2px solid var(--accent-color); }
+
+        button {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-weight: bold;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: opacity 0.2s;
+        }
+        
+        button:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
 
 <div class="game-container">
-    <h1>SheetTyper Dynamic</h1>
-    
-    <label style="font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 5px;">SELECT CATEGORY</label>
-    <select id="sheet-selector">
-        <option>Loading categories...</option>
-    </select>
+    <h1>SheetTyper v2</h1>
 
-    <div id="text-display">Select a tab above to load words.</div>
-    <textarea id="text-input" placeholder="Type here..." disabled></textarea>
+    <div class="settings-panel">
+        <div>
+            <label class="stat-label">Topic:</label>
+            <select id="topic-select">
+                <option value="">-- Select a Topic --</option>
+                <option value="TPM">TPM</option>
+                <option value="INSP">INSP</option>
+                <option value="IFCJ">IFCJ</option>
+                <option value="VINIA">VINIA</option>
+            </select>
+        </div>
+        <div>
+            <label class="stat-label">Or Upload CSV:</label>
+            <input type="file" id="file-input" accept=".csv">
+        </div>
+    </div>
     
-    <div style="margin-top: 20px;">
-        <button id="reset-btn" style="background: var(--accent); border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;">New Quote</button>
+    <div class="stats-bar">
+        <div class="stat-item"><span id="timer" class="stat-value">0</span><div class="stat-label">Sec</div></div>
+        <div class="stat-item"><span id="wpm" class="stat-value">0</span><div class="stat-label">WPM</div></div>
+        <div class="stat-item"><span id="accuracy" class="stat-value">100%</span><div class="stat-label">Acc</div></div>
+    </div>
+
+    <div id="text-display">Select a topic from the menu or upload a CSV file to begin typing...</div>
+    <textarea id="text-input" placeholder="Type here..." spellcheck="false" disabled></textarea>
+
+    <div class="controls">
+        <button id="reset-btn">Restart</button>
     </div>
 </div>
 
 <script>
-    // 1. REPLACE THIS ID WITH YOUR SPREADSHEET ID
-    const SPREADSHEET_ID = 'YOUR_LONG_ID_HERE'; 
+    // --- Mapped to your specific Google Sheet Tab URLs ---
+    const TOPIC_URLS = {
+        TPM: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs5BOOOMH-KGjk1fwF7OBeQr6_qlNS-O7o615kM1CELNHT0qojKWs6IZUzuL43Fj50bjCevbyCFV8i/pub?gid=0&single=true&output=csv',
+        INSP: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs5BOOOMH-KGjk1fwF7OBeQr6_qlNS-O7o615kM1CELNHT0qojKWs6IZUzuL43Fj50bjCevbyCFV8i/pub?gid=512644847&single=true&output=csv',
+        IFCJ: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs5BOOOMH-KGjk1fwF7OBeQr6_qlNS-O7o615kM1CELNHT0qojKWs6IZUzuL43Fj50bjCevbyCFV8i/pub?gid=1334295223&single=true&output=csv',
+        VINIA: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs5BOOOMH-KGjk1fwF7OBeQr6_qlNS-O7o615kM1CELNHT0qojKWs6IZUzuL43Fj50bjCevbyCFV8i/pub?gid=272455946&single=true&output=csv'
+    };
 
-    const selector = document.getElementById('sheet-selector');
-    const display = document.getElementById('text-display');
-    const input = document.getElementById('text-input');
+    const textDisplay = document.getElementById('text-display');
+    const textInput = document.getElementById('text-input');
+    const topicSelect = document.getElementById('topic-select');
+    const fileInput = document.getElementById('file-input');
+    const timerElement = document.getElementById('timer');
+    const wpmElement = document.getElementById('wpm');
+    const accuracyElement = document.getElementById('accuracy');
     const resetBtn = document.getElementById('reset-btn');
 
-    let allPhrases = [];
+    let phrases = [];
+    let currentPhrase = "";
+    let timerInterval = null;
+    let startTime = null;
+    let isGameRunning = false;
 
-    // 2. Fetch all sheet (tab) names from the Spreadsheet metadata
-    async function loadSheetNames() {
-        // This endpoint returns a JSON-like structure of the spreadsheet's sheets
-        const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json`;
+    // Handle Topic Selection
+    topicSelect.addEventListener('change', async (e) => {
+        const url = TOPIC_URLS[e.target.value];
+        if (!url) return;
         
+        textDisplay.innerText = "Fetching data from Google Sheets...";
         try {
             const response = await fetch(url);
-            const text = await response.text();
-            // Google wraps the response in a function call, we need to strip it
-            const json = JSON.parse(text.substring(47, text.length - 2));
-            
-            selector.innerHTML = '<option value="">-- Choose a Category --</option>';
-            
-            // Note: This specific visualization API method is tricky for sheet names. 
-            // Most reliable way: Manual list OR using a specific "Apps Script" proxy.
-            // PRO-TIP: Since Visualization API varies, we'll use the CSV Export strategy 
-            // for the actual phrases once a name is picked.
-            
-            // For now, let's assume you have tabs named "Easy", "Medium", "Hard"
-            // If you want it TRULY automatic without an API Key, you'll need a tiny Apps Script.
-            
-            // Alternative: Add your Tab Names here manually, and the code below 
-            // will handle the automatic CSV fetching for whatever tab you pick.
-            const tabs = ["General", "Code", "Literature", "Movies"]; 
-            tabs.forEach(tab => {
-                const opt = document.createElement('option');
-                opt.value = tab;
-                opt.innerText = tab;
-                selector.appendChild(opt);
-            });
-
-        } catch (e) {
-            display.innerText = "Error connecting to Google Sheets.";
-        }
-    }
-
-    // 3. Fetch CSV for the specific selected tab
-    selector.addEventListener('change', async (e) => {
-        const sheetName = e.target.value;
-        if (!sheetName) return;
-
-        display.innerText = "Loading data...";
-        const SPREADSHEET_ID = '1bBtu--rg2hxOVic7v-T6nln9Fb1GN8K8ZSs6b_1nNKE';
-
-// Inside your event listener:
-const csvUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
-        
-        try {
-            const response = await fetch(csvUrl);
+            if (!response.ok) throw new Error("Network response was not ok");
             const data = await response.text();
-            allPhrases = data.split(/\r?\n/).map(p => p.replace(/^"|"$/g, '')).filter(p => p.length > 2);
-            startRound();
+            processCSVData(data);
         } catch (err) {
-            display.innerText = "Error: Make sure the sheet is 'Published to Web'.";
+            textDisplay.innerText = "Error loading from Sheets. Ensure the sheet is 'Published to Web' as CSV.";
+            console.error(err);
         }
     });
 
-    function startRound() {
-        if (allPhrases.length === 0) return;
-        const phrase = allPhrases[Math.floor(Math.random() * allPhrases.length)];
+    // Handle Local File Upload
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            processCSVData(event.target.result);
+        };
+        reader.readAsText(file);
+    });
+
+    function processCSVData(csvText) {
+        // Splits by line and cleans up quotes often found in CSV exports
+        phrases = csvText.split(/\r?\n/)
+                  .map(p => p.replace(/^"|"$/g, '').trim())
+                  .filter(p => p.length > 5); // Filter out empty lines or tiny fragments
         
-        display.innerHTML = '';
-        phrase.split('').forEach(char => {
+        if (phrases.length > 0) {
+            startNewRound();
+        } else {
+            textDisplay.innerText = "CSV loaded, but no phrases were found.";
+        }
+    }
+
+    function startNewRound() {
+        if (phrases.length === 0) return;
+        
+        // Reset state
+        clearInterval(timerInterval);
+        isGameRunning = false;
+        textInput.value = "";
+        textInput.disabled = false;
+        timerElement.innerText = "0";
+        wpmElement.innerText = "0";
+        accuracyElement.innerText = "100%";
+        
+        // Pick random phrase
+        currentPhrase = phrases[Math.floor(Math.random() * phrases.length)];
+        
+        // Render phrase as spans for coloring
+        textDisplay.innerHTML = "";
+        currentPhrase.split('').forEach((char, i) => {
             const span = document.createElement('span');
             span.innerText = char;
-            display.appendChild(span);
+            if (i === 0) span.classList.add('char-current');
+            textDisplay.appendChild(span);
         });
         
-        input.value = "";
-        input.disabled = false;
-        input.focus();
+        textInput.focus();
     }
 
-    input.addEventListener('input', () => {
-        const spans = display.querySelectorAll('span');
-        const chars = input.value.split('');
-        
-        spans.forEach((span, i) => {
-            if (chars[i] == null) span.className = '';
-            else if (chars[i] === span.innerText) span.className = 'char-correct';
-            else span.className = 'char-incorrect';
+    textInput.addEventListener('input', () => {
+        if (!isGameRunning && textInput.value.length > 0) {
+            startTime = new Date();
+            timerInterval = setInterval(updateTimer, 1000);
+            isGameRunning = true;
+        }
+
+        const charSpans = textDisplay.querySelectorAll('span');
+        const inputValue = textInput.value.split('');
+        let mistakes = 0;
+
+        charSpans.forEach((span, i) => {
+            const char = inputValue[i];
+            span.classList.remove('char-current');
+            
+            if (char == null) {
+                span.classList.remove('char-correct', 'char-incorrect');
+                if (i === inputValue.length) span.classList.add('char-current');
+            } else if (char === span.innerText) {
+                span.classList.add('char-correct');
+                span.classList.remove('char-incorrect');
+            } else {
+                span.classList.add('char-incorrect');
+                mistakes++;
+            }
         });
 
-        if (input.value === display.innerText) {
-            input.disabled = true;
-            setTimeout(() => alert("Completed!"), 100);
+        // Update Accuracy
+        if (inputValue.length > 0) {
+            const acc = Math.round(((inputValue.length - mistakes) / inputValue.length) * 100);
+            accuracyElement.innerText = Math.max(0, acc) + "%";
+        }
+
+        // Check Completion
+        if (inputValue.length >= currentPhrase.length && mistakes === 0) {
+            clearInterval(timerInterval);
+            textInput.disabled = true;
+            // Delay alert slightly so user can see the final green text
+            setTimeout(() => {
+                alert("Great job! Final WPM: " + wpmElement.innerText);
+            }, 100);
         }
     });
 
-    resetBtn.onclick = startRound;
-    loadSheetNames();
-</script>
+    function updateTimer() {
+        const currentSecs = Math.floor((new Date() - startTime) / 1000);
+        if (currentSecs <= 0) return;
+        
+        timerElement.innerText = currentSecs;
+        
+        // WPM Calculation: (Characters / 5) / Minutes
+        const mins = currentSecs / 60;
+        const wpm = Math.round((textInput.value.length / 5) / mins);
+        wpmElement.innerText = wpm > 0 ? wpm : 0;
+    }
 
+    resetBtn.addEventListener('click', () => {
+        if (phrases.length > 0) {
+            startNewRound();
+        } else {
+            alert("Please select a topic first.");
+        }
+    });
+</script>
 </body>
 </html>
